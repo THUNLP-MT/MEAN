@@ -19,7 +19,6 @@ This repo contains the codes for our paper [Conditional Antibody Design as 3D Eq
 ### Dependencies
 
 we have prepared the script for environment setup in scripts/setup.sh, please install the dependencies in it with `bash scripts/setup.sh` before running our code.
-**Attention!!**: please run `export PYTHONPATH=$PYTHONPATH:/path/to/our/codes` before running our codes.
 
 ### Get Data
 We have provided the summary data used in our paper from SAbDab, RAbD, SKEMPI_V2 in the summaries folder, please download all structure data from the [download page of SAbDab](http://opig.stats.ox.ac.uk/webapps/newsabdab/sabdab/search/?all=true#downloads).
