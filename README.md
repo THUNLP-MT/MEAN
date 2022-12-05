@@ -93,3 +93,4 @@ Some codes are borrowed from existing repos:
 - evaluation/TMscore.cpp: https://zhanggroup.org/TM-score/
 - models/RegineGNN: https://github.com/wengong-jin/RefineGNN
 - models/Seq2Seq: https://github.com/wengong-jin/RefineGNN
+- data/anarci: https://github.com/oxpig/ANARCI
