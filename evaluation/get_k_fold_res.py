@@ -13,10 +13,7 @@ def parse():
                         help='Directory to k fold data')
     parser.add_argument('--cdr_type', type=int, choices=[1, 2, 3], required=True,
                         help='Type of cdr of the model')
-    parser.add_argument('--model', type=str, choices=['refinegnn', 'mcatt', 'mcegnn', \
-                        'seq2seq', 'mcatt_nogl', 'mcatt_noet', 'mcatt_nocenter',\
-                        'effmcatt', 'effmcegnn', 'effmcatt_noet', 'effmcatt_nogl'], required=True,
-                        help='Type of model')
+    parser.add_argument('--model', type=str, required=True, help='Type of model (model name)')
     parser.add_argument('--mode', type=str, choices=['100', '111'], required=True,
                         help='Input mode, H/L/X, e.g. 111 for input H + L + X')
     parser.add_argument('--version', type=int, default=0, help='Version')

@@ -10,7 +10,7 @@ from functools import partial
 from tqdm import tqdm
 from tqdm.contrib.concurrent import thread_map, process_map
 
-from pdb_utils import Protein, AAComplex
+from .pdb_utils import Protein, AAComplex
 from utils.io import read_csv
 from utils.network import url_get
 

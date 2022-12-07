@@ -20,85 +20,13 @@ from utils.logger import print_log
 from utils.random_seed import setup_seed
 
 
-def prepare_refine_gnn(model, mode, data_path, batch_size):
-    from trainer import RefineGNNTrainer
-    from data import AACDataset
-
-    dataset = AACDataset(data_path)
-    dataset.mode = mode
-    dataset.rearrange_by(model.cdr_type, batch_size)
-    return dataset, RefineGNNTrainer
-
-
-def prepare_seq2seq(model, mode, data_path, batch_size):
-    from trainer import Seq2SeqTrainer
-    from data import AACSeqDataset
-
-    dataset = AACSeqDataset(data_path)
-    dataset.mode = mode
-    return dataset, Seq2SeqTrainer
-
-
-def prepare_mc_att(model, mode, data_path, batch_size):
+def prepare_efficient_mc_att(model, mode, data_path, batch_size):
     from trainer import MCAttTrainer
     from data import EquiAACDataset
 
     dataset = EquiAACDataset(data_path)
     dataset.mode = mode
     return dataset, MCAttTrainer
-
-# ablation
-def prepare_mc_att_noet(model, mode, data_path, batch_size):
-    dataset, trainer = prepare_mc_att(model, mode, data_path, batch_size)
-    dataset.has_edge_type = False
-    return dataset, trainer
-
-def prepare_mc_att_nogl(model, mode, data_path, batch_size):
-    dataset, trainer = prepare_mc_att(model, mode, data_path, batch_size)
-    dataset.has_global_node = False
-    return dataset, trainer
-
-def prepare_mc_att_nocenter(model, mode, data_path, batch_size):
-    dataset, trainer = prepare_mc_att(model, mode, data_path, batch_size)
-    dataset.has_center = False
-    return dataset, trainer
-
-
-def prepare_efficient_mc_att_noet(model, mode, data_path, batch_size):
-    dataset, trainer = prepare_mc_att_nocenter(model, mode, data_path, batch_size)
-    dataset.has_edge_type = False
-    return dataset, trainer
-
-
-def prepare_efficient_mc_att_nogl(model, mode, data_path, batch_size):
-    dataset, trainer = prepare_mc_att_nocenter(model, mode, data_path, batch_size)
-    dataset.has_global_node = False
-    return dataset, trainer
-
-
-def get_prepare_func(model_type):
-    if model_type == 'mcatt' or model_type == 'mcegnn':
-        prepare_func = prepare_mc_att
-    elif model_type == 'mcatt_noet':
-        prepare_func = prepare_mc_att_noet
-    elif model_type == 'mcatt_nogl':
-        prepare_func = prepare_mc_att_nogl
-    elif model_type == 'mcatt_nocenter':
-        prepare_func = prepare_mc_att_nocenter
-    elif model_type == 'refinegnn':
-        prepare_func = prepare_refine_gnn
-    elif model_type == 'seq2seq':
-        prepare_func = prepare_seq2seq
-    elif model_type == 'effmcatt' or model_type == 'effmcegnn':
-        prepare_func = prepare_mc_att_nocenter  # no side chain
-    elif model_type == 'effmcatt_noet':
-        prepare_func = prepare_efficient_mc_att_noet
-    elif model_type == 'effmcatt_nogl':
-        prepare_func = prepare_efficient_mc_att_nogl
-    else:
-        raise NotImplementedError(f'model type {model_type} not implemented')
-    return prepare_func
-
 
 def get_config(ckpt):
     directory = os.path.split(ckpt)[0]
@@ -177,8 +105,7 @@ def main(args):
     model = torch.load(args.pretrain_ckpt, map_location='cpu')
     device = torch.device('cpu' if args.gpu == -1 else f'cuda:{args.gpu}')
     model.to(device)
-    prepare_func = get_prepare_func(model_type)
-    dataset, Trainer = prepare_func(model, mode, args.test_set, args.batch_size)
+    dataset, Trainer = prepare_efficient_mc_att(model, mode, args.test_set, args.batch_size)
     itawrapper = ITAWrapper(dataset, args.n_samples)
     origin_cplx = [dataset.data[i] for i in dataset.idx_mapping]
     

@@ -18,7 +18,7 @@ from utils.logger import print_log
 from utils.random_seed import setup_seed
 
 
-from ita_train import get_prepare_func, get_config
+from ita_train import get_config, prepare_efficient_mc_att
 
 def parse():
     parser = argparse.ArgumentParser(description='ITA generation')
@@ -42,8 +42,7 @@ def main(args):
     model = torch.load(args.ckpt, map_location='cpu')
     device = torch.device('cpu' if args.gpu == -1 else f'cuda:{args.gpu}')
     model.to(device)
-    prepare_func = get_prepare_func(model_type)
-    dataset, _ = prepare_func(model, mode, args.test_set, 32)
+    dataset, _ = prepare_efficient_mc_att(model, mode, args.test_set, 32)
     if args.save_dir is None:
         args.save_dir = os.path.split(args.ckpt)[0]
     args.save_dir = os.path.join(args.save_dir, 'ita_results')

@@ -9,8 +9,6 @@ from utils.logger import print_log
 from utils.random_seed import setup_seed
 
 from trainer import TrainConfig
-from data.pdb_utils import VOCAB
-
 
 
 def parse():
@@ -35,12 +33,6 @@ def parse():
     parser.add_argument("--local_rank", type=int, default=-1,
                         help="Local rank. Necessary for using the torch.distributed.launch utility.")
 
-    # model
-    parser.add_argument('--model', type=str, choices=['refinegnn', 'mcatt', 'mcegnn', \
-                        'seq2seq', 'mcatt_noet', 'mcatt_nogl', 'mcatt_nocenter', \
-                        'effmcatt', 'effpuremcatt', 'effmcatt_noet', 'effmcatt_nogl', \
-                        'effmcegnn'],
-                        required=True, help='Model type')
     ## shared
     parser.add_argument('--cdr_type', type=str, default='3', help='type of cdr')
     ## for Multi-Channel Attetion model
@@ -54,52 +46,6 @@ def parse():
     return parser.parse_args()
 
 
-def prepare_refine_gnn(args):
-    from trainer import RefineGNNTrainer
-    from data import AACDataset
-    from models.RefineGNN import HierarchicalDecoder
-    from models.RefineGNN.utils import RefineGNNConfig
-
-    ########### load your train / valid set ###########
-    train_set = AACDataset(args.train_set)
-    train_set.mode = args.mode
-    train_set.rearrange_by(args.cdr_type, args.batch_size)
-    valid_set = AACDataset(args.valid_set)
-    valid_set.mode = args.mode
-    valid_set.rearrange_by(args.cdr_type, args.batch_size)
-
-    ########## set your collate_fn ##########
-    _collate_fn = AACDataset.collate_fn
-
-    ########## define your model #########
-    model = HierarchicalDecoder(RefineGNNConfig(
-        vocab_size=len(VOCAB), cdr_type=args.cdr_type)
-    )
-    return RefineGNNTrainer, train_set, valid_set, _collate_fn, model
-
-
-def prepare_seq2seq(args):
-    from trainer import Seq2SeqTrainer
-    from data import AACSeqDataset
-    from models.Seq2Seq import Seq2Seq
-    from models.Seq2Seq.utils import Seq2SeqConfig
-
-    ########### load your train / valid set ###########
-    train_set = AACSeqDataset(args.train_set)
-    train_set.mode = args.mode
-    valid_set = AACSeqDataset(args.valid_set)
-    valid_set.mode = args.mode
-
-    ########## set your collate_fn ##########
-    _collate_fn = AACSeqDataset.collate_fn
-
-    ########## define your model #########
-    model = Seq2Seq(Seq2SeqConfig(
-        vocab_size=len(VOCAB), cdr_type=args.cdr_type)
-    )
-    return Seq2SeqTrainer, train_set, valid_set, _collate_fn, model
-
-
 def prepare_efficient_mc_att(args):
     from trainer import MCAttTrainer
     from data import EquiAACDataset
@@ -108,10 +54,8 @@ def prepare_efficient_mc_att(args):
     ########### load your train / valid set ###########
     train_set = EquiAACDataset(args.train_set)
     train_set.mode = args.mode
-    train_set.has_center = False
     valid_set = EquiAACDataset(args.valid_set)
     valid_set.mode = args.mode
-    valid_set.has_center = False
 
     ########## set your collate_fn ##########
     _collate_fn = EquiAACDataset.collate_fn
@@ -124,231 +68,10 @@ def prepare_efficient_mc_att(args):
         n_iter=args.n_iter
     )
     return MCAttTrainer, train_set, valid_set, _collate_fn, model
-
-
-def prepare_efficient_pure_mc_att(args):
-    from trainer import MCAttTrainer
-    from data import EquiAACDataset
-    from models.MCAttGNN import EfficientPureMCAttModel
-
-    ########### load your train / valid set ###########
-    train_set = EquiAACDataset(args.train_set)
-    train_set.mode = args.mode
-    train_set.has_center = False
-    valid_set = EquiAACDataset(args.valid_set)
-    valid_set.mode = args.mode
-    valid_set.has_center = False
-
-    ########## set your collate_fn ##########
-    _collate_fn = EquiAACDataset.collate_fn
-
-    ########## define your model #########
-    n_channel = valid_set[0]['X'].shape[1]
-    model = EfficientPureMCAttModel(
-        args.embed_size, args.hidden_size, n_channel, n_edge_feats=1,
-        n_layers=args.n_layers, cdr_type=args.cdr_type, alpha=args.alpha
-    )
-    return MCAttTrainer, train_set, valid_set, _collate_fn, model
-
-
-def prepare_mc_att(args):
-    from trainer import MCAttTrainer
-    from data import EquiAACDataset
-    from models.MCAttGNN import MCAttModel
-
-    ########### load your train / valid set ###########
-    train_set = EquiAACDataset(args.train_set)
-    train_set.mode = args.mode
-    valid_set = EquiAACDataset(args.valid_set)
-    valid_set.mode = args.mode
-
-    ########## set your collate_fn ##########
-    _collate_fn = EquiAACDataset.collate_fn
-
-    ########## define your model #########
-    n_channel = valid_set[0]['X'].shape[1]
-    model = MCAttModel(
-        args.embed_size, args.hidden_size, n_channel, n_edge_feats=1,
-        n_layers=args.n_layers, cdr_type=args.cdr_type, alpha=args.alpha
-    )
-    return MCAttTrainer, train_set, valid_set, _collate_fn, model
-
-
-# for ablation
-def prepare_mc_egnn(args):
-    from trainer import MCAttTrainer
-    from data import EquiAACDataset
-    from models.MCAttGNN import MCEGNNModel
-
-    ########### load your train / valid set ###########
-    train_set = EquiAACDataset(args.train_set)
-    train_set.mode = args.mode
-    valid_set = EquiAACDataset(args.valid_set)
-    valid_set.mode = args.mode
-
-    ########## set your collate_fn ##########
-    _collate_fn = EquiAACDataset.collate_fn
-
-    ########## define your model #########
-    n_channel = valid_set[0]['X'].shape[1]
-    model = MCEGNNModel(
-        args.embed_size, args.hidden_size, n_channel, n_edge_feats=1,
-        n_layers=args.n_layers, cdr_type=args.cdr_type, alpha=args.alpha
-    )
-    return MCAttTrainer, train_set, valid_set, _collate_fn, model
-
-
-def prepare_mc_att_noet(args):
-    from trainer import MCAttTrainer
-    from data import EquiAACDataset
-    from models.MCAttGNN import MCAttModel
-
-    ########### load your train / valid set ###########
-    print_log('No edge feature')
-    train_set = EquiAACDataset(args.train_set)
-    train_set.mode = args.mode
-    train_set.has_edge_type = False
-    valid_set = EquiAACDataset(args.valid_set)
-    valid_set.mode = args.mode
-    valid_set.has_edge_type = False
-
-    ########## set your collate_fn ##########
-    _collate_fn = EquiAACDataset.collate_fn
-
-    ########## define your model #########
-    n_channel = valid_set[0]['X'].shape[1]
-    model = MCAttModel(
-        args.embed_size, args.hidden_size, n_channel, n_edge_feats=0,
-        n_layers=args.n_layers, cdr_type=args.cdr_type, alpha=args.alpha
-    )
-    return MCAttTrainer, train_set, valid_set, _collate_fn, model
-
-
-def prepare_mc_att_nogl(args):
-    trainer, train_set, valid_set, _collate_fn, model = prepare_mc_att(args)
-    print_log('No global node')
-    train_set.has_global_node = False
-    valid_set.has_global_node = False
-
-    return trainer, train_set, valid_set, _collate_fn, model
-
-
-def prepare_mc_att_nocenter(args):
-    from trainer import MCAttTrainer
-    from data import EquiAACDataset
-    from models.MCAttGNN import MCAttModel
-
-    ########### load your train / valid set ###########
-    print_log('No side chain feature')
-    train_set = EquiAACDataset(args.train_set)
-    train_set.mode = args.mode
-    train_set.has_center = False
-    valid_set = EquiAACDataset(args.valid_set)
-    valid_set.mode = args.mode
-    valid_set.has_center = False
-
-    ########## set your collate_fn ##########
-    _collate_fn = EquiAACDataset.collate_fn
-
-    ########## define your model #########
-    n_channel = valid_set[0]['X'].shape[1]
-    model = MCAttModel(
-        args.embed_size, args.hidden_size, n_channel, n_edge_feats=1,
-        n_layers=args.n_layers, cdr_type=args.cdr_type, alpha=args.alpha
-    )
-    return MCAttTrainer, train_set, valid_set, _collate_fn, model
-
-
-def prepare_efficient_mc_egnn(args):
-    from trainer import MCAttTrainer
-    from data import EquiAACDataset
-    from models.MCAttGNN import EfficientMCEGNNModel
-
-    ########### load your train / valid set ###########
-    train_set = EquiAACDataset(args.train_set)
-    train_set.mode = args.mode
-    train_set.has_center = False
-    valid_set = EquiAACDataset(args.valid_set)
-    valid_set.mode = args.mode
-    valid_set.has_center = False
-
-    ########## set your collate_fn ##########
-    _collate_fn = EquiAACDataset.collate_fn
-
-    ########## define your model #########
-    n_channel = valid_set[0]['X'].shape[1]
-    model = EfficientMCEGNNModel(
-        args.embed_size, args.hidden_size, n_channel, n_edge_feats=1,
-        n_layers=args.n_layers, cdr_type=args.cdr_type, alpha=args.alpha
-    )
-    return MCAttTrainer, train_set, valid_set, _collate_fn, model
-
-
-def prepare_efficient_mc_att_noet(args):
-    from trainer import MCAttTrainer
-    from data import EquiAACDataset
-    from models.MCAttGNN import EfficientMCAttModel
-
-    ########### load your train / valid set ###########
-    train_set = EquiAACDataset(args.train_set)
-    train_set.mode = args.mode
-    train_set.has_center = False
-    train_set.has_edge_type = False
-    valid_set = EquiAACDataset(args.valid_set)
-    valid_set.mode = args.mode
-    valid_set.has_center = False
-    valid_set.has_edge_type = False
-
-    ########## set your collate_fn ##########
-    _collate_fn = EquiAACDataset.collate_fn
-
-    ########## define your model #########
-    n_channel = valid_set[0]['X'].shape[1]
-    model = EfficientMCAttModel(
-        args.embed_size, args.hidden_size, n_channel, n_edge_feats=0,
-        n_layers=args.n_layers, cdr_type=args.cdr_type, alpha=args.alpha,
-        n_iter=args.n_iter
-    )
-    return MCAttTrainer, train_set, valid_set, _collate_fn, model
-
-
-def prepare_efficient_mc_att_nogl(args):
-    trainer, train_set, valid_set, _collate_fn, model = prepare_efficient_mc_att(args)
-    print_log('No global node')
-    train_set.has_global_node = False
-    valid_set.has_global_node = False
-
-    return trainer, train_set, valid_set, _collate_fn, model
 
 
 def main(args):
-    if args.model == 'refinegnn':
-        prepare_func = prepare_refine_gnn
-    elif args.model == 'effmcatt':
-        prepare_func = prepare_efficient_mc_att
-    elif args.model == 'effpuremcatt':
-        prepare_func = prepare_efficient_pure_mc_att
-    elif args.model == 'effmcatt_noet':
-        prepare_func = prepare_efficient_mc_att_noet
-    elif args.model == 'effmcatt_nogl':
-        prepare_func = prepare_efficient_mc_att_nogl
-    elif args.model == 'effmcegnn':
-        prepare_func = prepare_efficient_mc_egnn
-    elif args.model == 'mcatt':
-        prepare_func = prepare_mc_att
-    elif args.model == 'mcatt_noet':
-        prepare_func = prepare_mc_att_noet
-    elif args.model == 'mcatt_nogl':
-        prepare_func = prepare_mc_att_nogl
-    elif args.model == 'mcatt_nocenter':
-        prepare_func = prepare_mc_att_nocenter
-    elif args.model == 'mcegnn':
-        prepare_func = prepare_mc_egnn
-    elif args.model == 'seq2seq':
-        prepare_func = prepare_seq2seq
-    else:
-        raise NotImplementedError(f'model type {args.model} not implemented')
-    Trainer, train_set, valid_set, _collate_fn, model = prepare_func(args)
+    Trainer, train_set, valid_set, _collate_fn, model = prepare_efficient_mc_att(args)
     if args.local_rank == 0 or args.local_rank == -1:
         print_log(str(args))
         print_log(f'model type: {args.model}, parameters: {sum([p.numel() for p in model.parameters()])}')  # million

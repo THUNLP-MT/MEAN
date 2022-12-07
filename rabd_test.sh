@@ -6,7 +6,7 @@ if [ -z ${MODE} ]; then
     MODE=111
 fi
 if [ -z ${MODEL} ]; then
-    MODEL=mcatt
+    MODEL=mean
 fi
 if [ -z ${CDR} ]; then
     CDR=3

@@ -21,7 +21,7 @@ echo "Summary file at ${SUMMARY}. PDB folder at ${PDB_DIR}. Data working directo
 ALL=${DATA_DIR}/sabdab_all.json
 
 # download data
-python data/download.py \
+python -m data.download \
     --summary ${SUMMARY} \
     --pdb_dir ${PDB_DIR} \
     --fout ${ALL} \

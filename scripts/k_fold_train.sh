@@ -6,7 +6,7 @@ cd ${PROJ_FOLDER}
 
 
 if [ $# != 4 ]; then
-    echo "Usage: GPU=x1,x2... bash $0 /directory/to/all_data <mode: (100, 111)> <model: (refinegnn, mcatt)> <port: (9901, ...)>"
+    echo "Usage: GPU=x1,x2... bash $0 /directory/to/all_data <mode: (100, 111)> <model type> <port: (9901, ...)>"
     exit 1;
 fi
 ROOT_DIR=$1

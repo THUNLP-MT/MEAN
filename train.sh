@@ -50,7 +50,7 @@ if [ -z ${MODE} ]; then
     MODE=111
 fi
 
-MODEL=effmcatt
+MODEL=mean
 if [ $1 ]; then
 	MODEL=$1
 fi

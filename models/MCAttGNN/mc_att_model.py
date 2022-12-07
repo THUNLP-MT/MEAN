@@ -1,14 +1,14 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
 import torch
-from torch import masked_fill, nn
+from torch import nn
 import torch.nn.functional as F
 
 from torch_scatter import scatter_sum
 
 from data import VOCAB
 
-from .mc_egnn import MCAttEGNN, MCEGNN, PureMCAtt
+from .mc_egnn import MCAttEGNN
 
 
 def sequential_and(*tensors):
@@ -533,26 +533,3 @@ class EfficientMCAttModel(MCAttModel):
             'cdr_range': cdr_range,
             'final_atts': atts
         }
-
-
-class EfficientPureMCAttModel(EfficientMCAttModel):
-    def __init__(self, embed_size, hidden_size, n_channel, n_edge_feats=0, n_layers=3, cdr_type='3', alpha=0.1, dropout=0.1):
-        super().__init__(embed_size, hidden_size, n_channel, n_edge_feats, n_layers, cdr_type, alpha, dropout)
-        self.gnn = PureMCAtt(embed_size, hidden_size, self.num_aa_type,
-                             n_channel, n_edge_feats, n_layers=n_layers,
-                             residual=True, dropout=dropout)
-
-# these are for ablation study. (without interface attention layer)
-class MCEGNNModel(MCAttModel):
-    def __init__(self, embed_size, hidden_size, n_channel, n_edge_feats=0, n_layers=3, cdr_type='3', alpha=0.1, dropout=0.1):
-        super().__init__(embed_size, hidden_size, n_channel, n_edge_feats, n_layers, cdr_type, alpha, dropout)
-        self.gnn = MCEGNN(embed_size, hidden_size, self.num_aa_type,
-                          n_channel, n_edge_feats, n_layers=n_layers,
-                          residual=True, dropout=dropout)
-
-class EfficientMCEGNNModel(EfficientMCAttModel):
-    def __init__(self, embed_size, hidden_size, n_channel, n_edge_feats=0, n_layers=3, cdr_type='3', alpha=0.1, dropout=0.1, n_iter=5):
-        super().__init__(embed_size, hidden_size, n_channel, n_edge_feats, n_layers, cdr_type, alpha, dropout, n_iter)
-        self.gnn = MCEGNN(embed_size, hidden_size, self.num_aa_type,
-                          n_channel, n_edge_feats, n_layers=n_layers,
-                          residual=True, dropout=dropout)

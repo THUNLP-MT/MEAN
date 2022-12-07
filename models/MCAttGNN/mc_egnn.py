@@ -310,61 +310,6 @@ class MCAttEGNN(nn.Module):
             return h, x
 
 
-class PureMCAtt(MCAttEGNN):
-    def __init__(self, in_node_nf, hidden_nf, out_node_nf, n_channel, in_edge_nf=0, act_fn=nn.SiLU(), n_layers=4, residual=True, dropout=0.1, dense=False):
-        super().__init__(in_node_nf, hidden_nf, out_node_nf, n_channel, in_edge_nf, act_fn, n_layers, residual, dropout, dense)
-        for i in range(0, self.n_layers):
-            self._modules[f'gcl_{i}'] = MC_Att_L(
-                self.hidden_nf, self.hidden_nf, self.hidden_nf, n_channel,
-                edges_in_d=in_edge_nf, act_fn=act_fn, dropout=dropout
-            )
-
-
-# this is for ablation study (no attention layer)
-class MCEGNN(nn.Module):
-    def __init__(self, in_node_nf, hidden_nf, out_node_nf, n_channel, in_edge_nf=0,
-                 act_fn=nn.SiLU(), n_layers=4, residual=True, dropout=0.1):
-        super().__init__()
-        '''
-        :param in_node_nf: Number of features for 'h' at the input
-        :param hidden_nf: Number of hidden features
-        :param out_node_nf: Number of features for 'h' at the output
-        :param n_channel: Number of channels of coordinates
-        :param in_edge_nf: Number of features for the edge features
-        :param act_fn: Non-linearity
-        :param n_layers: Number of layer for the EGNN
-        :param residual: Use residual connections, we recommend not changing this one
-        :param dropout: probability of dropout
-        '''
-        self.hidden_nf = hidden_nf
-        self.n_layers = n_layers
-
-        self.dropout = nn.Dropout(dropout)
-
-        self.linear_in = nn.Linear(in_node_nf, self.hidden_nf)
-        self.linear_out = nn.Linear(self.hidden_nf, out_node_nf)
-
-        for i in range(0, n_layers):
-            self.add_module(f'gcl_{i}', MC_E_GCL(
-                self.hidden_nf, self.hidden_nf, self.hidden_nf, n_channel,
-                edges_in_d=in_edge_nf, act_fn=act_fn, residual=residual, dropout=dropout
-            ))
-        self.out_layer = MC_E_GCL(
-            self.hidden_nf, self.hidden_nf, self.hidden_nf, n_channel,
-            edges_in_d=in_edge_nf, act_fn=act_fn, residual=residual
-        )
-    
-    def forward(self, h, x, ctx_edges, att_edges=None, ctx_edge_attr=None, att_edge_attr=None):
-        h = self.linear_in(h)
-        h = self.dropout(h)
-        for i in range(0, self.n_layers):
-            h, x = self._modules[f'gcl_{i}'](h, ctx_edges, x, edge_attr=ctx_edge_attr)
-        h, x = self.out_layer(h, ctx_edges, x, edge_attr=ctx_edge_attr)
-        h = self.dropout(h)
-        h = self.linear_out(h)
-        return h, x
-
-
 def coord2radial(edge_index, coord):
     row, col = edge_index
     coord_diff = coord[row] - coord[col]  # [n_edge, n_channel, d]

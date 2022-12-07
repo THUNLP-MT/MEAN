@@ -26,7 +26,7 @@ Since the SAbDab is updating on a weekly basis, you may also download the newest
 The following instructions will suppose the structure data renumbered by imgt is located at the folder *all_structures/imgt*.
 
 ## Experiments
-We have provided the shell scripts for different procedures of the experiments, which are located either in the folder *scripts* or in the root folder of our repo. For scripts in *scripts*, you can run them without arguments to see their hints of usage, which will also be illustrated in README later. One thing that might need explanation is the mode parameter which takes the value of either 100 or 111. **100** means only heavy chain is used in the context, and **111** means heavy chain, light chain as well as the epitope are considered in the context. The later one is the complete setting of antigen-binding CDR design, whereas the first one is only for comparison with RefineGNN. Also, for specifying the type of model to use, effmcatt represents our MEAN.
+We have provided the shell scripts for different procedures of the experiments, which are located either in the folder *scripts* or in the root folder of our repo. For scripts in *scripts*, you can run them without arguments to see their hints of usage, which will also be illustrated in README later. One thing that might need explanation is the mode parameter which takes the value of either 100 or 111. **100** means only heavy chain is used in the context, and **111** means heavy chain, light chain as well as the epitope are considered in the context. The later one is the complete setting of antigen-binding CDR design, whereas the first one is only for comparison with RefineGNN. \<model type\> in the argument only specify the prefix of the directory to save/load the checkpoints, we use **mean** in the following sections.
 
 ### K-fold evaluation on SAbDab
 We have provided the scripts for data preparation, k-fold training and evaluation
@@ -37,8 +37,8 @@ We have provided the scripts for data preparation, k-fold training and evaluatio
 here is an example for evaluating our MEAN:
 ```bash
 bash scripts/prepare_data_kfold.sh summaries/sabdab_summary.tsv all_structures/imgt
-GPU=0 bash scripts/k_fold_train.sh summaries 111 effmcatt 9901
-GPU=0 bash scripts/k_fold_eval.sh summaries 111 effmcatt 0
+GPU=0 bash scripts/k_fold_train.sh summaries 111 mean 9901
+GPU=0 bash scripts/k_fold_eval.sh summaries 111 mean 0
 ```
 
 By running `bash scripts/prepare_data_kfold.sh summaries/sabdab_summary.tsv all_structures/imgt`, the script will copy the pdbs in the summary to *summaries/pdb*, transform the summary to json format, and generate 10-fold data splits for each cdr, which requires ~5G space. If you want to do data preparation in another directory, just copy the summary file there and replace the *summaries/sabdab_summary.tsv* with the new path.
@@ -46,7 +46,7 @@ Also, for each parallel run of trainining, the checkpoints will be saved in vers
 
 
 ### Antigen-binding CDR-H3 Redesign
-before running this task, please at least run the commands of downloading json summary of SAbDab in scripts/prepare_data_kfold.sh. We will suppose the json file is located at summaries/sabdab_all.json.
+before running this task, please at least run the commands of downloading json summary of SAbDab in scripts/prepare_data_kfold.sh (line 23-31). We will suppose the json file is located at summaries/sabdab_all.json.
 - data preparation: bash scripts/prepare_data_rabd.sh \<rabd summary file\> \<pdb folder\> \<sabdab summary file in json format\>
 - training: GPU=\<gpu id\> MODE=\<mode\> DATA_DIR=\<data directory with train, valid and test json summary\> bash train.sh \<model type\> \<cdr type\>
 - evaluation: GPU=\<gpu id\> MODE=\<mode\> DATA_DIR=\<data directory with train, valid and test json summary\> bash rabd_test.sh \<version id\> \[checkpoint path\]
@@ -54,11 +54,11 @@ before running this task, please at least run the commands of downloading json s
 Example:
 ```bash
 bash scripts/prepare_data_rabd.sh summaries/rabd_summary.jsonl all_structures/imgt summaries/sabdab_all.json
-GPU=0 MODE=111 DATA_DIR=summaries/cdrh3 bash train.sh effmcatt 3
+GPU=0 MODE=111 DATA_DIR=summaries/cdrh3 bash train.sh mean 3
 GPU=0 MODE=111 DATA_DIR=summaries/cdrh3 bash rabd_test.sh 0
 ```
 
-We have also provided the trained checkpoint used in our paper at checkpoints/ckpt/rabd_cdrh3_mean.ckpt. You can use it for test by running `GPU=0 MODE=111 DATA_DIR=summaries/cdrh3 bash rabd_test.sh 0 checkpoints/ckpt/rabd_cdrh3_mean.ckpt`
+We have also provided the trained checkpoint used in our paper at checkpoints/ckpt/rabd_cdrh3_mean.ckpt. You can use it for test by running `GPU=0 MODE=111 DATA_DIR=summaries/cdrh3 bash rabd_test.sh 0 checkpoints/ckpt/rabd_cdrh3_mean.ckpt`. The results will be saved to the folder named **results** under the same directory as the checkpoint.
 
 ### Affinity Optimization
 before running this task, please at least run the commands of downloading json summary of SAbDab in scripts/prepare_data_kfold.sh (line 23-31). We will suppose the json file is located at summaries/sabdab_all.json.
@@ -71,12 +71,12 @@ before running this task, please at least run the commands of downloading json s
 Example:
 ```bash
 bash scripts/prepare_data_skempi.sh summaries/skempi_v2_summary.jsonl all_structures/imgt summaries/sabdab_all.json
-GPU=0 MODE=111 DATA_DIR=summaries bash train.sh effmcatt 3
-GPU=0 CKPT_DIR=summaries/ckpt/effmcatt_CDR3_111/version_0 bash ita_train.sh
-GPU=0 DATA_DIR=summaries bash ita_generate.sh summaries/ckpt/effmcatt_CDR3_111/version_0/ita/iter_i.ckpt  # specify the checkpoint from iteration i for testing
+GPU=0 MODE=111 DATA_DIR=summaries bash train.sh mean 3
+GPU=0 CKPT_DIR=summaries/ckpt/mean_CDR3_111/version_0 bash ita_train.sh
+GPU=0 DATA_DIR=summaries bash ita_generate.sh summaries/ckpt/mean_CDR3_111/version_0/ita/iter_i.ckpt  # specify the checkpoint from iteration i for testing
 ```
 
-We have also provided the checkpoint after ITA finetuning at checkpoints/ckpt/opt_cdrh3_mean.ckpt. You can directly use it for inference by running `GPU=0 DATA_DIR=summaries bash ita_generate.sh checkpoints/ckpt/opt_cdrh3_mean.ckpt`
+We have also provided the checkpoint after ITA finetuning at checkpoints/ckpt/opt_cdrh3_mean.ckpt. You can directly use it for inference by running `GPU=0 DATA_DIR=summaries bash ita_generate.sh checkpoints/ckpt/opt_cdrh3_mean.ckpt`. This script will generate 100 optimized candidates for each antibody in summaries/skempi_all.json and report the top1 in terms of predicted ddg. The pdbs of optimized candidates will be located at the same directory of the checkpoint.
 
 
 ## Contact
@@ -91,6 +91,5 @@ Some codes are borrowed from existing repos:
 
 - evaluation/ddg: https://github.com/HeliXonProtein/binding-ddg-predictor
 - evaluation/TMscore.cpp: https://zhanggroup.org/TM-score/
-- models/RegineGNN: https://github.com/wengong-jin/RefineGNN
-- models/Seq2Seq: https://github.com/wengong-jin/RefineGNN
 - data/anarci: https://github.com/oxpig/ANARCI
+- models/MCAttGNN/mc_egnn: https://github.com/vgsatorras/egnn

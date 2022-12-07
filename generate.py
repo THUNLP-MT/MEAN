@@ -13,7 +13,7 @@ from tqdm.contrib.concurrent import process_map
 import torch
 from torch.utils.data import DataLoader
 
-from data import AAComplex
+from data import AAComplex, EquiAACDataset
 from evaluation.rmsd import kabsch
 from utils.logger import print_log
 from utils.random_seed import setup_seed
@@ -200,24 +200,7 @@ def main(args):
     device = torch.device('cpu' if args.gpu == -1 else f'cuda:{args.gpu}')
     model_type = get_model_type(args.ckpt)
     print(f'model type: {model_type}')
-    if 'mcatt' in model_type or 'mcegnn' in model_type:
-        from data import EquiAACDataset
-        test_set = EquiAACDataset(args.test_set)
-        if 'noet' in model_type:
-            test_set.has_edge_type = False
-        if 'nogl' in model_type:
-            test_set.has_global_node = False
-        if 'nocenter' in model_type or 'eff' in model_type:
-            test_set.has_center = False
-
-    elif model_type == 'refinegnn':
-        from data import AACDataset
-        test_set = AACDataset(args.test_set)
-    elif model_type == 'seq2seq':
-        from data import AACSeqDataset
-        test_set = AACSeqDataset(args.test_set)
-    else:
-        raise NotImplementedError(f'model type {model_type} not recognized')
+    test_set = EquiAACDataset(args.test_set)
     test_set.mode = args.mode
     test_loader = DataLoader(test_set, batch_size=args.batch_size,
                              num_workers=args.num_workers,
