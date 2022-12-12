@@ -37,8 +37,8 @@ def parse():
 
 def main(args):
     print(str(args))
-    model_type, mode = get_config(args.ckpt)
-    print(f'model type: {model_type}, mode: {mode}')
+    mode = get_config(args.ckpt)
+    print(f'mode: {mode}')
     model = torch.load(args.ckpt, map_location='cpu')
     device = torch.device('cpu' if args.gpu == -1 else f'cuda:{args.gpu}')
     model.to(device)

@@ -83,14 +83,14 @@ def eval_one(tup, out_dir, cdr='H3'):
     return summary
 
 
-def get_model_type(ckpt):
-    directory = os.path.split(ckpt)[0]
-    directory = os.path.split(directory)[0]
-    config = os.path.join(directory, 'train_config.json')
-    with open(config, 'r') as fin:
-        config = json.load(fin)['args']
-    model_type = re.search(r'model=\'(.*?)\'', config).group(1)
-    return model_type
+# def get_model_type(ckpt):
+#     directory = os.path.split(ckpt)[0]
+#     directory = os.path.split(directory)[0]
+#     config = os.path.join(directory, 'train_config.json')
+#     with open(config, 'r') as fin:
+#         config = json.load(fin)['args']
+#     model_type = re.search(r'model=\'(.*?)\'', config).group(1)
+#     return model_type
 
 
 def rabd_test(args, model, test_set, test_loader, device):
@@ -198,8 +198,8 @@ def main(args):
     print(str(args))
     model = torch.load(args.ckpt, map_location='cpu')
     device = torch.device('cpu' if args.gpu == -1 else f'cuda:{args.gpu}')
-    model_type = get_model_type(args.ckpt)
-    print(f'model type: {model_type}')
+    # model_type = get_model_type(args.ckpt)
+    # print(f'model type: {model_type}')
     test_set = EquiAACDataset(args.test_set)
     test_set.mode = args.mode
     test_loader = DataLoader(test_set, batch_size=args.batch_size,

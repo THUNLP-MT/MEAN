@@ -34,9 +34,9 @@ def get_config(ckpt):
     config = os.path.join(directory, 'train_config.json')
     with open(config, 'r') as fin:
         config = json.load(fin)['args']
-    model_type = re.search(r'model=\'(.*?)\'', config).group(1)
+    # model_type = re.search(r'model=\'(.*?)\'', config).group(1)
     mode = re.search(r'mode=\'([0-1][0-1][0-1])\'', config).group(1)
-    return model_type, mode
+    return mode
 
 
 def parse():
@@ -100,8 +100,8 @@ def valid_check(seq):
 
 def main(args):
     print(str(args))
-    model_type, mode = get_config(args.pretrain_ckpt)
-    print(f'model type: {model_type}, mode: {mode}')
+    mode = get_config(args.pretrain_ckpt)
+    print(f'mode: {mode}')
     model = torch.load(args.pretrain_ckpt, map_location='cpu')
     device = torch.device('cpu' if args.gpu == -1 else f'cuda:{args.gpu}')
     model.to(device)
