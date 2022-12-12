@@ -70,7 +70,6 @@ ${PREFIX} train.py \
     --max_epoch ${MAX_EPOCH} \
     --gpu "${!GPU_ARR[@]}" \
     --mode ${MODE} \
-	--model ${MODEL} \
     --cdr_type ${CDR} \
     --lr ${LR} \
     --alpha 0.8 \
