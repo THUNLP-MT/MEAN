@@ -74,7 +74,7 @@ def main(args):
     Trainer, train_set, valid_set, _collate_fn, model = prepare_efficient_mc_att(args)
     if args.local_rank == 0 or args.local_rank == -1:
         print_log(str(args))
-        print_log(f'model type: {args.model}, parameters: {sum([p.numel() for p in model.parameters()])}')  # million
+        print_log(f'parameters: {sum([p.numel() for p in model.parameters()])}')  # million
 
     if len(args.gpus) > 1:
         torch.cuda.set_device(args.local_rank)
