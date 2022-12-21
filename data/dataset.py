@@ -155,7 +155,7 @@ class EquiAACDataset(torch.utils.data.Dataset):
         idx = self._check_load_part(idx)
         item, res = self.data[idx], {}
         # each item is an instance of ABComplex. res has following entries
-        # X: [seq_len, 5, 3], coordinates of N, CA, C, O, CB, center of side chain. Missing data are set to the average of two ends
+        # X: [seq_len, 4, 3], coordinates of N, CA, C, O. Missing data are set to the average of two adjacent nodes
         # S: [seq_len], indices of each residue
         # L: string of cdr labels, 0 for non-cdr residues, 1 for cdr1, 2 for cdr2, 3 for cdr3 
 
@@ -188,7 +188,7 @@ class EquiAACDataset(torch.utils.data.Dataset):
                     break
             if skip:
                 continue
-            X.append([(0, 0, 0) for _ in range(5)])  # begin symbol is global symbol, update coordination afterwards
+            X.append([(0, 0, 0) for _ in range(4)])  # begin symbol is global symbol, update coordination afterwards
             S.append(VOCAB.symbol_to_idx(box))
             start = len(X)
             for chain in chains:
@@ -228,7 +228,7 @@ class EquiAACDataset(torch.utils.data.Dataset):
                 L[pos] = str(i)
 
         res = {
-            'X': torch.tensor(np.array(X), dtype=torch.float), # 3d coordination [n_node, 5, 3]
+            'X': torch.tensor(np.array(X), dtype=torch.float), # 3d coordination [n_node, 4, 3]
             'S': torch.tensor(S, dtype=torch.long),  # 1d sequence     [n_node]
             'L': ''.join(L)                          # cdr annotation, str of length n_node, 1 / 2 / 3 for cdr H1/H2/H3
         }
@@ -248,7 +248,7 @@ class EquiAACDataset(torch.utils.data.Dataset):
             offsets.append(offsets[-1] + len(Ss[i]))
 
         return {
-            'X': torch.cat(Xs, dim=0),  # [n_all_node, 5, 3]
+            'X': torch.cat(Xs, dim=0),  # [n_all_node, 4, 3]
             'S': torch.cat(Ss, dim=0),  # [n_all_node]
             'L': Ls,
             'offsets': torch.tensor(offsets, dtype=torch.long)
