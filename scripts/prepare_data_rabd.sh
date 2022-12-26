@@ -23,7 +23,7 @@ echo "Summary file at ${SUMMARY}. SAbDab file at ${SABDAB}. PDB folder at ${PDB_
 ALL=${DATA_DIR}/rabd_all.json
 
 # download data
-python data/download.py \
+python -m data.download.py \
     --summary ${SUMMARY} \
     --pdb_dir ${PDB_DIR} \
     --fout ${ALL} \
@@ -45,7 +45,7 @@ do
     python data/split.py \
         --data ${SABDAB} \
         --rabd ${ALL} \
-		--out_dir ${PROCESS_DIR} \
+        --out_dir ${PROCESS_DIR} \
         --valid_ratio 0.1 \
         --cdr ${CDR} \
         --filter 111
