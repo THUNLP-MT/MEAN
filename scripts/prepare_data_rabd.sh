@@ -23,7 +23,7 @@ echo "Summary file at ${SUMMARY}. SAbDab file at ${SABDAB}. PDB folder at ${PDB_
 ALL=${DATA_DIR}/rabd_all.json
 
 # download data
-python -m data.download.py \
+python -m data.download \
     --summary ${SUMMARY} \
     --pdb_dir ${PDB_DIR} \
     --fout ${ALL} \
