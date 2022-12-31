@@ -25,7 +25,7 @@ ALL=${DATA_DIR}/skempi_all.json
 # the handling logic is mostly the same as rabd
 
 # download data
-python data/download.py \
+python -m data.download \
     --summary ${SUMMARY} \
     --pdb_dir ${PDB_DIR} \
     --fout ${ALL} \
