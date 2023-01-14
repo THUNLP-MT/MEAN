@@ -79,6 +79,25 @@ GPU=0 DATA_DIR=summaries bash ita_generate.sh summaries/ckpt/mean_CDR3_111/versi
 We have also provided the checkpoint after ITA finetuning at checkpoints/ckpt/opt_cdrh3_mean.ckpt. You can directly use it for inference by running `GPU=0 DATA_DIR=summaries bash ita_generate.sh checkpoints/ckpt/opt_cdrh3_mean.ckpt`. This script will generate 100 optimized candidates for each antibody in summaries/skempi_all.json and report the top1 in terms of predicted ddg. The pdbs of optimized candidates will be located at the same directory of the checkpoint.
 
 
+## Inference API
+We also provide the script for design / optimization of single CDR at scritps/design.py. The script requires an input pdb containing the heavy chain, the light chain and the antigen. The pdb should be renumbered using the IMGT system in advance, which can be achieved by the script at data/ImmunoPDB.py fron ANARCI. Here is an example of CDR-H3 design for the 1ic7 pdb:
+
+```bash
+python ./data/ImmunoPDB.py -i data/1ic7.pdb -o 1ic7.pdb -s imgt  # renumber the pdb
+python ./scripts/design.py --pdb scripts/1ic7.pdb --heavy_chain H --light_chain L
+```
+
+The generated pdb as well as a summary of the CDR-H3 sequence will be saved to ./results.
+The default checkpoint used in the script is checkpoints/ckpt/rabd_cdrh3_mean.ckpt. You can pass your own checkpoint by the argument `--ckpt path/to/your/checkpoint` (e.g. use the opt_cdrh3_mean.ckpt for CDR optimization)
+
+Further, the script is able to accommodate multiple pdbs as inputs, for example:
+```bash
+python ./scripts/design.py
+    --pdb pdb1 pdb2 ...
+    --heavy_chain Hchain1 Hchain2 ...
+    --light_chain Lchain1 Lchain2 ...
+```
+
 ## Contact
 
 Thank you for your interest in our work!
