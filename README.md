@@ -11,6 +11,7 @@ This repo contains the codes for our paper [Conditional Antibody Design as 3D Eq
     - [K-fold Evaluation on SAbDab](#k-fold-evaluation-on-sabdab)
     - [Antigen-binding CDR-H3 Redesign](#antigen-binding-cdr-h3-redesign)
     - [Affinity Optimization](#affinity-optimization)
+- [Inference API](#inference-api)
 - [Contact](#contact)
 - [Others](#others)
 
