@@ -22,7 +22,7 @@ echo "Using checkpoint: ${CKPT}"
 
 python ita_train.py \
     --pretrain_ckpt ${CKPT} \
-    --test_set ${DATA_DIR}/all.json \
+    --test_set ${DATA_DIR}/skempi_all.json \
     --save_dir ${CKPT_DIR}/ita \
     --batch_size 4 \
     --update_freq 4 \
