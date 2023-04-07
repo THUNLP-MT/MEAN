@@ -85,7 +85,7 @@ We also provide the script for design / optimization of single CDR at scritps/de
 
 ```bash
 python ./data/ImmunoPDB.py -i data/1ic7.pdb -o 1ic7.pdb -s imgt  # renumber the pdb
-python ./scripts/design.py --pdb scripts/1ic7.pdb --heavy_chain H --light_chain L
+python ./scripts/design.py --pdb 1ic7.pdb --heavy_chain H --light_chain L
 ```
 
 The generated pdb as well as a summary of the CDR-H3 sequence will be saved to ./results.
